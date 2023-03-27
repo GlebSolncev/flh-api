@@ -1,0 +1,65 @@
+version: "3.8"
+services:
+
+  # Backend
+  backend:
+    container_name: backend
+    image: php:fpm-alpine
+    build:
+      context: .
+      dockerfile: ./docker/services/backend/Dockerfile
+    volumes:
+      - ./backend:/var/www/backend
+
+  # Frontend
+  frontend:
+    tty: true
+    image: node:alpine
+    entrypoint: ['npm', 'run', 'dev']
+    container_name: frontend
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    build:
+      dockerfile: ./docker/services/frontend/Dockerfile
+    volumes:
+      - ./frontend:/var/www/frontend
+      - /var/www/frontend/node_modules
+    ports:
+      - "8080:8000"
+
+
+  # Web Server
+  nginx:
+    container_name: web
+    image: nginx:alpine
+    build:
+      context: ./docker/services/web
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/var/www
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+      - frontend
+
+
+
+
+  # Database
+  database:
+    container_name: db
+    image: mysql:8.0.25
+    volumes:
+      - ./docker/volumes/mysql:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+    ports:
+      - "3306:3306"
+
+networks:
+  internal:
+    driver: bridge

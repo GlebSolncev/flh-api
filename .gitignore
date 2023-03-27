@@ -1,0 +1,5 @@
+./.idea
+/backend/vendor
+frontend/node_modules
+node_modules
+docker/volumes/mysql
