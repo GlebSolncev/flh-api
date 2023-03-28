@@ -24,6 +24,8 @@ class Project extends Model
         'description',
         'amount',
         'currency',
+        'link',
+        'published_at'
     ];
 
 

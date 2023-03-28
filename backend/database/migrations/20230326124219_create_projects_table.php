@@ -23,6 +23,8 @@ final class CreateProjectsTable extends AbstractMigration
         $table->addColumn('title', 'string', ['limit' => 200])
             ->addColumn('api_id', 'integer')
             ->addColumn('description', 'text')
+            ->addColumn('link', 'string')
+            ->addColumn('published_at', 'datetime')
             ->addColumn('amount', 'double', ['null' => true])
             ->addColumn('currency', 'string', ['null' => true])
             ->addColumn('is_active', 'boolean', ['default' => true])

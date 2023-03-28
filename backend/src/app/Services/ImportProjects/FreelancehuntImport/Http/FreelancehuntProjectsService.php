@@ -45,7 +45,7 @@ class FreelancehuntProjectsService extends AbstractFreelancehuntServices impleme
 
             $projectService->saveCollect($this->formattingData($data));
             dump($linkNext !== $linkLast, $linkNext, $linkLast);
-            sleep(0.3);
+            sleep(1);
         }
 
         return $collect;
@@ -108,6 +108,8 @@ class FreelancehuntProjectsService extends AbstractFreelancehuntServices impleme
             'api_id' => Arr::get($item, 'id'),
             'author' => $this->getAuthorData($item),
             'title' => Arr::get($item, 'attributes.name'),
+            'link' => Arr::get($item, 'links.self.web'),
+            'published_at' => Arr::get($item, 'attributes.published_at'),
             'description' => Arr::get($item, 'attributes.description'),
             'currency' => Arr::get($item, 'attributes.budget.currency'),
             'skills' => $this->getSkillsData($item)

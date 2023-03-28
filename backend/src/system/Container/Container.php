@@ -82,15 +82,21 @@ class Container
 
         if ($ref->getParameters() !== null) {
             foreach ($ref->getParameters() as $parameter) {
-                if(in_array($parameter->getName(), array_keys($defaultParams))) continue;
-                $class = new ($parameter->getType()->getName());
-                if($class instanceof Request)
-                    $class = $class::createFromGlobals();
+                $typeName = $parameter->getType()->getName();
+                if(class_exists($typeName)){
+                    $paramInstance = \Illuminate\Container\Container::getInstance()->make($typeName);
+                    if($paramInstance instanceof Request)
+                        $paramInstance = $paramInstance::createFromGlobals();
+                }else{
+                    $paramInstance = '';
+                    settype($paramInstance, $typeName);
+                }
 
-                $params[] = $class;
+                $params[] = $paramInstance;
             }
         }
 
-        return $controller->{$methodName}(...array_merge([$defaultParams], $params));
+        $args = array_filter(array_merge([$defaultParams], $params));
+        return $controller->{$methodName}(...$args);
     }
 }

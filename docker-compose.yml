@@ -4,21 +4,20 @@ services:
   # Backend
   backend:
     container_name: backend
-    image: php:fpm-alpine
+    depends_on:
+      - database
     build:
       context: .
       dockerfile: ./docker/services/backend/Dockerfile
     volumes:
       - ./backend:/var/www/backend
+      - ./backend/composer.json:/var/www/backend/composer.json
 
   # Frontend
   frontend:
     tty: true
-    image: node:alpine
-    entrypoint: ['npm', 'run', 'dev']
+#    image: node:alpine
     container_name: frontend
-    environment:
-      - CHOKIDAR_USEPOLLING=true
     build:
       dockerfile: ./docker/services/frontend/Dockerfile
     volumes:
@@ -41,10 +40,6 @@ services:
       - "3000:80"
     depends_on:
       - backend
-      - frontend
-
-
-
 
   # Database
   database:
@@ -60,6 +55,6 @@ services:
     ports:
       - "3306:3306"
 
-networks:
-  internal:
-    driver: bridge
+#networks:
+#  internal:
+#    driver: bridge

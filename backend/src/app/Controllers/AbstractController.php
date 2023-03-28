@@ -5,7 +5,6 @@ namespace App\Controllers;
 use App\Services\AbstractService;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  *
@@ -19,13 +18,12 @@ abstract class AbstractController
     protected AbstractService $service;
 
     /**
-     * @param Response $response
+     * AbstractController construct
+     *
      * @throws BindingResolutionException
      */
-    public function __construct(protected Response $response)
+    public function __construct()
     {
-        $this->response->headers = ['Content-Type' => 'application/json'];
-
         if($this->getServiceClassName())
             $this->service = Container::getInstance()->make($this->getServiceClassName());
     }

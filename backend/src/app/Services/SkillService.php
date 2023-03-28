@@ -28,7 +28,7 @@ class SkillService extends AbstractService
     public function getForResponse(){
         return $this->model->all()->map(function($model){
             return $this->getModelForResponse($model);
-        })->toJson(1);
+        });
     }
     public function createOrUpdate(array $data, array $findBy = [])
     {

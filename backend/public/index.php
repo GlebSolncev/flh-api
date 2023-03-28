@@ -1,11 +1,35 @@
 <?php
 declare(strict_types=1);
 
-header("Access-Control-Allow-Origin: http://localhost:8080");
+//header("Access-Control-Allow-Origin: http://localhost:3000");
+
+// Allow from any origin
+if (isset($_SERVER['HTTP_ORIGIN'])) {
+    // Decide if the origin in $_SERVER['HTTP_ORIGIN'] is one
+    // you want to allow, and if so:
+    header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
+    header('Access-Control-Allow-Credentials: true');
+    header('Access-Control-Max-Age: 86400');    // cache for 1 day
+}
+
+// Access-Control headers are received during OPTIONS requests
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+
+    if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']))
+        // may also be using PUT, PATCH, HEAD etc
+        header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+
+    if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']))
+        header("Access-Control-Allow-Headers: {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
+
+    exit(0);
+}
 
 
+use App\Controllers\HomeController;
 use App\Controllers\SkillController;
 use Illuminate\Database\Capsule\Manager;
+use Symfony\Component\HttpFoundation\Response;
 use System\Container\Container;
 use System\Router\Route;
 use System\Router\Router;
@@ -19,8 +43,6 @@ require __DIR__ . '/../vendor/autoload.php';
 // load Dot env
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__.'/../');
 $dotenv->load();
-
-
 
 //DB
 $capsule = new Manager();
@@ -40,7 +62,9 @@ try {
 
     // Routing
     $router = new Router([
-        new Route('projects', '/projects', [ProjectController::class, 'index']),
+        new Route('home', '/', [HomeController::class, 'index']),
+        new Route('projects', '/projects', [ProjectController::class, 'index'], ['POST']),
+        new Route('budgets', '/projects/budgets', [ProjectController::class, 'budgets'], ['POST']),
         new Route('skills', '/skills', [SkillController::class, 'index']),
     ]);
 
@@ -59,7 +83,13 @@ try {
     $class = $container->resolveClass($controllerName);
     $result = $container->callMethod($class, $methodName, $arguments);
 
-    echo $result->getContent();
+    $response = new Response();
+    $response->setContent(json_encode([
+        'status' => true,
+        'payload' => $result
+    ]));
+    echo $response->getContent();
+
 } catch (\Exception $exception) {
     var_dump("ERROR", $exception->getMessage());exit();
     header("HTTP/1.0 404 Not Found");

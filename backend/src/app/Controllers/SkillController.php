@@ -24,7 +24,6 @@ class SkillController extends AbstractController
      */
     public function index()
     {
-        $this->response->setContent($this->service->getForResponse());
-        return $this->response;
+        return $this->service->getForResponse();
     }
 }
