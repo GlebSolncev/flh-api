@@ -23,8 +23,8 @@ build: # Build container
 	docker-compose run backend composer install
 	docker-compose run backend ./vendor/bin/phinx migrate
 
-.PHONY: projects-import
-projects-import: # Import projects from Freelancehunt
+.PHONY: import-projects
+import-projects: # Import projects from Freelancehunt
 	docker-compose run backend ./vendor/bin/phinx seed:run
 
 

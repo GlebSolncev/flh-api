@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Services;
 
@@ -6,16 +7,19 @@ use App\Models\Project;
 use App\Services\ImportProjects\FreelancehuntImport;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  *
  */
 class ProjectService extends AbstractService
 {
+
     /**
      * @param AuthorService $authorService
      * @param SkillService $skillService
@@ -38,9 +42,11 @@ class ProjectService extends AbstractService
     }
 
     /**
-     * @return mixed
+     * @param int   $page
+     * @param array $data
+     * @return Model
      */
-    public function getForResponse(int $page, array $data)
+    public function getForResponse(int $page, array $data): LengthAwarePaginator
     {
         $this->setPageForPaginate($page);
 
@@ -117,48 +123,63 @@ class ProjectService extends AbstractService
     {
         $import = new FreelancehuntImport();
         $import->importProjects();
-//        $this->saveCollect($responseData);
     }
 
     /**
      * @param Collection $collect
-     * @return true
-     * @throws BindingResolutionException
+     * @return void
      */
-    public function saveCollect(Collection $collect)
+    public function saveCollect(Collection $collect): void
     {
-
-        /** @var AuthorService $authorService */
-        $authorService = Container::getInstance()->make(AuthorService::class);
-        /** @var SkillService $skillService */
-        $skillService = Container::getInstance()->make(SkillService::class);
-
-        $collect->map(function($item) use($authorService, $skillService){
-
+        $collect->map(function($item){
             //AUTHOR
-            $author = $authorService->createOrUpdate(Arr::get($item, 'author'), [['username', '=', Arr::get($item, 'author.username')]]);
-            if(!$author) throw new \ErrorException('Finder doesnt work');
-
+            $author = $this->syncAuthor($item);
 
             // PROJECT
             $project = $this->model->where('api_id', Arr::get($item, 'api_id'))->first();
             if($project){
                 $project->fill($item)->save();
+            }else{
+                $project = (new $this->model)->fill($item);
+                $author->projects()->save($project);
             }
 
-            $project = (new $this->model)->fill($item);
-            $author->projects()->save($project);
-
-            //SKILS
-            $skillIds = [];
-            foreach(Arr::get($item, 'skills', []) as $skill){
-                $skillIds[]  = $skillService->createOrUpdate($skill, [['api_id', '=', $skill['api_id']]])->id;
-            }
-            $project->skills()->sync($skillIds);
-
+            //SKILLS
+            if($project)
+                $this->syncSkills($project, $item);
         });
+    }
 
-        return true;
+    /**
+     * @param array $item
+     * @return Model
+     * @throws \ErrorException
+     */
+    protected function syncAuthor(array $item): Model
+    {
+        $author = $this->authorService->createOrUpdate(
+            Arr::get($item, 'author'), [
+                ['username', '=', Arr::get($item, 'author.username')]
+            ]
+        );
+        if(!$author) throw new \ErrorException('Finder doesnt work');
+
+        return $author;
+    }
+
+    /**
+     * @param Model $project
+     * @param array $item
+     * @return void
+     */
+    protected function syncSkills(Model $project, array $item): void
+    {
+        $skillIds = [];
+        foreach(Arr::get($item, 'skills', []) as $skill){
+            $skillIds[]  = $this->skillService->createOrUpdate($skill, [['api_id', '=', $skill['api_id']]])->id;
+        }
+
+        $project->skills()->sync($skillIds);
     }
 
     /**

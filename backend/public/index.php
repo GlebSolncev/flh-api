@@ -29,6 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 use App\Controllers\HomeController;
 use App\Controllers\SkillController;
 use Illuminate\Database\Capsule\Manager;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use System\Container\Container;
 use System\Router\Route;
@@ -58,8 +59,12 @@ $capsule->addConnection([
 $capsule->setAsGlobal();
 $capsule->bootEloquent();
 
+$response = new JsonResponse(
+    'Content',
+    Response::HTTP_OK,
+    ['content-type' => 'application/json']
+);
 try {
-
     // Routing
     $router = new Router([
         new Route('home', '/', [HomeController::class, 'index']),
@@ -83,16 +88,21 @@ try {
     $class = $container->resolveClass($controllerName);
     $result = $container->callMethod($class, $methodName, $arguments);
 
-    $response = new Response();
     $response->setContent(json_encode([
         'status' => true,
         'payload' => $result
     ]));
-    echo $response->getContent();
+    $response->send();
 
 } catch (\Exception $exception) {
-    var_dump("ERROR", $exception->getMessage());exit();
-    header("HTTP/1.0 404 Not Found");
+
+    $response = new JsonResponse(
+        'Content',
+        Response::HTTP_NOT_FOUND,
+        ['content-type' => 'application/json']
+    );
+    $response->setContent(json_encode(['status' => false, 'payload' => $exception->getMessage()]));
+    $response->send();
 }
 
-exit(0);
+exit(1);

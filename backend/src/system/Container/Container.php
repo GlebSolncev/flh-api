@@ -3,6 +3,7 @@
 namespace System\Container;
 ;
 
+use Illuminate\Contracts\Container\BindingResolutionException;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
@@ -30,7 +31,7 @@ class Container
      * @param string $methodName
      * @param array $defaultParams
      * @return mixed
-     * @throws ReflectionException
+     * @throws ReflectionException|BindingResolutionException
      */
     public function callMethod(mixed $controller, string $methodName, array $defaultParams): mixed
     {
@@ -73,7 +74,7 @@ class Container
      * @param string $methodName
      * @param array $defaultParams
      * @return mixed
-     * @throws ReflectionException
+     * @throws ReflectionException|BindingResolutionException
      */
     protected function resolveMethod(mixed $controller,string $methodName,array $defaultParams): mixed
     {

@@ -44,7 +44,7 @@ class FreelancehuntProjectsService extends AbstractFreelancehuntServices impleme
             $query = Arr::get(parse_url($linkNext), 'query');
 
             $projectService->saveCollect($this->formattingData($data));
-            dump($linkNext !== $linkLast, $linkNext, $linkLast);
+            dump($linkNext, $linkLast, $linkNext !== $linkLast);
             sleep(1);
         }
 
