@@ -1,4 +1,4 @@
-./.idea
+.idea/
 /backend/vendor
 frontend/node_modules
 docker/volumes/mysql/*
