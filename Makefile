@@ -23,6 +23,17 @@ build: # Build container
 	docker-compose run backend composer install
 	docker-compose run backend ./vendor/bin/phinx migrate
 
+
+.PHONY: down
+down: # Down project
+	docker-compose down
+
+.PHONY: stop
+stop: # Stop working container
+	docker-compose stop
+
+
+
 .PHONY: import-projects
 import-projects: # Import projects from Freelancehunt
 	docker-compose run backend ./vendor/bin/phinx seed:run
