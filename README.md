@@ -16,6 +16,7 @@ For DB u can use ```make cli database``` - and use credentials for mysql-client 
 
 ## Requires:
 - Docker Desktop 4.17.0
+- GNU Make 3.81
 
 
 

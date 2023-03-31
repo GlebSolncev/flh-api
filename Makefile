@@ -19,9 +19,9 @@ cli: # Open cli container. List: backend, frontend, database. Example: make cli 
 
 .PHONY: build
 build: # Build container
-	docker-compose build --no-cache
-	docker-compose run backend composer install
-	docker-compose run backend ./vendor/bin/phinx migrate
+	docker-compose --env-file .env build --no-cache
+	docker-compose --env-file .env run backend composer install
+	docker-compose --env-file .env run backend ./vendor/bin/phinx migrate
 
 
 .PHONY: down
